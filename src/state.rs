@@ -23,9 +23,9 @@ impl State {
 
     /// Sets that state to a new value and output the number of required clicks to get there.
     pub fn set(&mut self, value: f32) -> u32 {
-        let target = if value <= 0.1 {
+        let target = if value <= 0.3 {
             Off
-        } else if value <= 0.6 {
+        } else if value <= 0.8 {
             match self {
                 Off | HalfUp => HalfUp,
                 Full | HalfDown => HalfDown

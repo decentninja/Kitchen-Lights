@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 philipshue = "0.3.2"
+libusb = { git = "https://github.com/jeamland/libusb-rs", branch ="refcount" }
+byteorder = "1.3.1"
