@@ -1,11 +1,11 @@
-use libusb;
 use byteorder::{LittleEndian, WriteBytesExt};
+use libusb;
 use std::thread;
 use std::time::Duration;
 
 pub struct Mindstorm {
     buff: [u8; 1024],
-    device: libusb::DeviceHandle
+    device: libusb::DeviceHandle,
 }
 
 const EP_IN: u8 = 0x81;
@@ -32,20 +32,25 @@ impl Mindstorm {
         device.set_active_configuration(0).unwrap();
         device.claim_interface(0).unwrap();
         let mut buff: [u8; 1024] = [0; 1024];
-        device.read_interrupt(EP_IN, &mut buff, Duration::from_secs(5)).unwrap();
-        Some(Mindstorm {
-            buff,
-            device
-        })
+        device
+            .read_interrupt(EP_IN, &mut buff, Duration::from_secs(5))
+            .unwrap();
+        Some(Mindstorm { buff, device })
     }
 
     fn command(&mut self, ops: Vec<u8>) -> Result<&[u8], DisconnectError> {
-        match self.device.write_interrupt(EP_OUT, &make_command(ops), Duration::from_secs(5)) {
-            Ok(_) => {},
+        match self
+            .device
+            .write_interrupt(EP_OUT, &make_command(ops), Duration::from_secs(5))
+        {
+            Ok(_) => {}
             Err(libusb::Error::NoDevice) => return Err(DisconnectError),
             Err(e) => panic!("{}", e),
         }
-        match self.device.read_interrupt(EP_IN, &mut self.buff, Duration::from_secs(5)) {
+        match self
+            .device
+            .read_interrupt(EP_IN, &mut self.buff, Duration::from_secs(5))
+        {
             Ok(_) => Ok(&self.buff),
             Err(libusb::Error::NoDevice) => return Err(DisconnectError),
             Err(e) => panic!(e),
@@ -64,10 +69,7 @@ impl Mindstorm {
         let MOTOR_START = 0xA6;
         let MOTOR_STOP = 0xA3;
         let MOTOR_MEDIUM = 0x08;
-        let mut cmd = vec![
-            MOTOR_TYPE, 0, 1, MOTOR_MEDIUM,
-            MOTOR_SPEED, 0, 1
-        ];
+        let mut cmd = vec![MOTOR_TYPE, 0, 1, MOTOR_MEDIUM, MOTOR_SPEED, 0, 1];
         lcx(&mut cmd, power);
         cmd.extend_from_slice(&[MOTOR_START, 0, 1]);
         self.command(cmd)?;
@@ -75,7 +77,6 @@ impl Mindstorm {
         self.command(vec![MOTOR_STOP, 0, 1, 0])?;
         Ok(())
     }
-
 }
 
 fn lcx(buff: &mut Vec<u8>, value: i32) {
@@ -97,7 +98,8 @@ fn lcx(buff: &mut Vec<u8>, value: i32) {
 
 fn make_command(ops: Vec<u8>) -> Vec<u8> {
     let mut buff: Vec<u8> = Vec::new();
-    buff.write_u16::<LittleEndian>((ops.len() + 5) as u16).unwrap();
+    buff.write_u16::<LittleEndian>((ops.len() + 5) as u16)
+        .unwrap();
     buff.write_u16::<LittleEndian>(42).unwrap();
     let DIRECT_COMMAND_REPLY = 0x00;
     buff.push(DIRECT_COMMAND_REPLY);

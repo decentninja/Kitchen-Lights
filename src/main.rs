@@ -1,14 +1,13 @@
+use chrono::prelude::*;
 use std::thread;
 use std::time::Duration;
-use chrono::prelude::*;
 
 mod hue;
-mod state;
 mod mindstorm;
-
+mod state;
 
 macro_rules! wait_break {
-    ($expression:expr, $explain:expr, $do:expr) => (
+    ($expression:expr, $explain:expr, $do:expr) => {
         match $expression {
             Ok(value) => value,
             Err(e) => {
@@ -17,11 +16,11 @@ macro_rules! wait_break {
                 $do
             }
         };
-    )
+    };
 }
 
 macro_rules! wait_break_option {
-    ($expression:expr, $explain:expr, $do:expr) => (
+    ($expression:expr, $explain:expr, $do:expr) => {
         match $expression {
             Some(value) => value,
             None => {
@@ -30,15 +29,23 @@ macro_rules! wait_break_option {
                 $do
             }
         };
-    )
+    };
 }
 
 fn main() {
     loop {
-        let bridge = wait_break!(hue::WrappedBridge::connect(), "Philips Hue Bridge", continue);
+        let bridge = wait_break!(
+            hue::WrappedBridge::connect(),
+            "Philips Hue Bridge",
+            continue
+        );
         println!("Hue connected!");
         let mut state = state::State::new();
-        let mut mindstorm = wait_break_option!(mindstorm::Mindstorm::connect(), "No Mindstorm Connected", continue);
+        let mut mindstorm = wait_break_option!(
+            mindstorm::Mindstorm::connect(),
+            "No Mindstorm Connected",
+            continue
+        );
         println!("Mindstorm connected!");
         loop {
             let value = wait_break!(bridge.magic(), "Philips Hue Bridge", break);
@@ -59,7 +66,6 @@ fn main() {
 fn wait(millis: u64) {
     thread::sleep(Duration::from_millis(millis));
 }
-
 
 fn tap(mindstorm: &mut mindstorm::Mindstorm) -> Result<(), mindstorm::DisconnectError> {
     mindstorm.motor_a(-65, Duration::from_millis(100))?;

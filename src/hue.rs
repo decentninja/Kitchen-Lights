@@ -1,9 +1,9 @@
 use philipshue;
 use philipshue::bridge::{self, Bridge};
-use std::fs::{File};
-use std::io::prelude::*;
+use philipshue::errors::{BridgeError, HueError, HueErrorKind};
+use std::fs::File;
 use std::io;
-use philipshue::errors::{HueError, HueErrorKind, BridgeError};
+use std::io::prelude::*;
 use std::thread;
 use std::time::Duration;
 
@@ -15,9 +15,7 @@ impl WrappedBridge {
     pub fn connect() -> Result<Self, HueError> {
         let ip = bridge::discover()?[0].ip().to_owned();
         let bridge = login(&ip)?;
-        Ok(Self {
-            bridge
-        })
+        Ok(Self { bridge })
     }
 
     /// Read the current brightness of the magic light as a value between 0 and 1.
@@ -37,7 +35,7 @@ impl WrappedBridge {
                 magic.state.bri as f32 / std::u8::MAX as f32
             } else {
                 0.
-            })
+            });
         }
     }
 }
@@ -49,7 +47,7 @@ fn login(ip: &str) -> Result<Bridge, io::Error> {
             let mut user = String::new();
             file.read_to_string(&mut user)?;
             user
-        },
+        }
         Err(e) => {
             println!("Tried to read login file. {}", e);
             println!("Will try to register instead");
@@ -65,13 +63,17 @@ fn login(ip: &str) -> Result<Bridge, io::Error> {
 fn register(ip: &str) -> String {
     loop {
         match bridge::register_user(ip, "encrypt.wave@gmail.com") {
-            Ok(user) => {
-                return user
-            },
-            Err(HueError(HueErrorKind::BridgeError { error: BridgeError::LinkButtonNotPressed, .. }, _)) => {
+            Ok(user) => return user,
+            Err(HueError(
+                HueErrorKind::BridgeError {
+                    error: BridgeError::LinkButtonNotPressed,
+                    ..
+                },
+                _,
+            )) => {
                 println!("Please, press the link on the bridge. Retrying in 5 seconds.");
                 thread::sleep(Duration::from_secs(5));
-            },
+            }
             Err(e) => {
                 panic!("Unexpected error occured: {}", e);
             }

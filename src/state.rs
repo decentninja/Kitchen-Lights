@@ -3,7 +3,7 @@ pub enum State {
     Off,
     HalfUp,
     Full,
-    HalfDown
+    HalfDown,
 }
 use State::*;
 
@@ -28,7 +28,7 @@ impl State {
         } else if value <= 0.8 {
             match self {
                 Off | HalfUp => HalfUp,
-                Full | HalfDown => HalfDown
+                Full | HalfDown => HalfDown,
             }
         } else {
             Full
@@ -51,7 +51,7 @@ mod test {
         let clicks = state.set(value);
         assert_eq!((from, to, should), (from, state, clicks));
     }
-    
+
     #[test]
     fn SlowlyUp() {
         test(Off, 0.5, HalfUp, 1);
