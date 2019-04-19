@@ -51,11 +51,10 @@ fn main() {
             let value = wait_break!(bridge.magic(), "Philips Hue Bridge", break);
             let clicks = state.set(value);
             if clicks != 0 {
-                wait_break!(tap(&mut mindstorm), "Mindstorm", break);
                 println!("{} Clicking to {:?}", Local::now(), state);
             }
             for _ in 0..clicks {
-                wait(100);
+                wait_break!(tap(&mut mindstorm), "Mindstorm", break);
             }
             wait(1000);
         }
@@ -68,7 +67,7 @@ fn wait(millis: u64) {
 }
 
 fn tap(mindstorm: &mut mindstorm::Mindstorm) -> Result<(), mindstorm::DisconnectError> {
-    mindstorm.motor_a(-65, Duration::from_millis(100))?;
-    mindstorm.motor_a(10, Duration::from_millis(100))?;
+    mindstorm.motor_a(-80, Duration::from_millis(100))?;
+    wait(100);
     Ok(())
 }
