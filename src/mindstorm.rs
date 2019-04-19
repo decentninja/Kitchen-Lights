@@ -11,6 +11,15 @@ pub struct Mindstorm {
 const EP_IN: u8 = 0x81;
 const EP_OUT: u8 = 0x01;
 
+#[derive(Debug)]
+pub struct DisconnectError;
+
+impl std::fmt::Display for DisconnectError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Mindstorm disconnected")
+    }
+}
+
 impl Mindstorm {
     pub fn connect() -> Option<Self> {
         let LEGO_VENDOR_ID = 0x0694;
@@ -30,10 +39,17 @@ impl Mindstorm {
         })
     }
 
-    fn command(&mut self, ops: Vec<u8>) -> &[u8] {
-        self.device.write_interrupt(EP_OUT, &make_command(ops), Duration::from_secs(5)).unwrap();
-        self.device.read_interrupt(EP_IN, &mut self.buff, Duration::from_secs(5)).unwrap();
-        &self.buff
+    fn command(&mut self, ops: Vec<u8>) -> Result<&[u8], DisconnectError> {
+        match self.device.write_interrupt(EP_OUT, &make_command(ops), Duration::from_secs(5)) {
+            Ok(_) => {},
+            Err(libusb::Error::NoDevice) => return Err(DisconnectError),
+            Err(e) => panic!("{}", e),
+        }
+        match self.device.read_interrupt(EP_IN, &mut self.buff, Duration::from_secs(5)) {
+            Ok(_) => Ok(&self.buff),
+            Err(libusb::Error::NoDevice) => return Err(DisconnectError),
+            Err(e) => panic!(e),
+        }
     }
 
     fn nop(&mut self) {
@@ -42,7 +58,7 @@ impl Mindstorm {
     }
 
     /// Run motor A for time, power -100 to 100
-    pub fn motor_a(&mut self, power: i32, time: Duration) {
+    pub fn motor_a(&mut self, power: i32, time: Duration) -> Result<(), DisconnectError> {
         let MOTOR_TYPE = 0xA1;
         let MOTOR_SPEED = 0xA5;
         let MOTOR_START = 0xA6;
@@ -54,9 +70,10 @@ impl Mindstorm {
         ];
         lcx(&mut cmd, power);
         cmd.extend_from_slice(&[MOTOR_START, 0, 1]);
-        self.command(cmd);
+        self.command(cmd)?;
         thread::sleep(time);
-        self.command(vec![MOTOR_STOP, 0, 1, 0]);
+        self.command(vec![MOTOR_STOP, 0, 1, 0])?;
+        Ok(())
     }
 
 }
@@ -97,30 +114,6 @@ mod test {
     fn yes() {
         let mut robot = Mindstorm::connect();
         robot.nop();
-    }
-
-    #[test]
-    fn motor() {
-        let mut robot = Mindstorm::connect();
-        robot.tap();
-    }
-
-    #[test]
-    fn transmute() {
-        let values: Vec<(i8, i8)> = vec![(-1, 1), (-8, 8), (-16, 16)];
-        for (a, b) in values {
-            println!("As i8 {} {:08b} {:08b}", b, a, b);
-            let (aa, bb) = unsafe { (std::mem::transmute::<i8, u8>(a), std::mem::transmute::<i8, u8>(b)) };
-            println!("As u8 {} {:08b} {:08b}", b, aa, bb);
-        }
-        assert!(false);
-    }
-
-    #[test]
-    fn negative() {
-        println!("{:08b}", 1);
-        println!("{:08b}", 1 | 0b10000000);
-        assert!(false);
     }
 
 }
