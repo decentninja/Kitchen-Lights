@@ -5,6 +5,7 @@ use sysfs_gpio::{self, Pin};
 
 mod hue;
 mod state;
+mod config;
 
 macro_rules! wait_break {
     ($expression:expr, $explain:expr, $do:expr) => {
@@ -20,6 +21,13 @@ macro_rules! wait_break {
 }
 
 fn main() {
+    let config = match config::read_from_file() {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("{}", e);
+            return
+        }
+    };
     let mut state = state::State::new();
     let button = Pin::new(7);
     loop {
@@ -32,14 +40,14 @@ fn main() {
         println!("Hue connected!");
         loop {
             let value = wait_break!(bridge.magic(), "Philips Hue Bridge", break);
-            let clicks = state.set(value);
+            let clicks = state.set(value, &config.state);
             if clicks != 0 {
                 println!("{} Clicking to {:?}", Local::now(), state);
             }
             for _ in 0..clicks {
                 wait_break!(tap(&button), "Tapping", break);
             }
-            wait(1000);
+            wait(config.poll_time_ms);
         }
     }
 }

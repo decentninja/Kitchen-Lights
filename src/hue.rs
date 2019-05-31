@@ -3,6 +3,7 @@ use philipshue::bridge::{self, Bridge};
 use philipshue::errors::{BridgeError, HueError, HueErrorKind};
 use std::fs::File;
 use std::io;
+use std::fmt;
 use std::io::prelude::*;
 use std::thread;
 use std::time::Duration;
@@ -11,8 +12,40 @@ pub struct WrappedBridge {
     bridge: Bridge,
 }
 
+pub enum SetupError {
+    HueError(HueError),
+    NoBridges,
+    LoginIoError(io::Error)
+}
+
+impl std::convert::From<HueError> for SetupError {
+    fn from(e: HueError) -> Self {
+        SetupError::HueError(e)
+    }
+}
+
+impl std::convert::From<io::Error> for SetupError {
+    fn from(e: io::Error) -> Self {
+        SetupError::LoginIoError(e)
+    }
+}
+
+impl fmt::Display for SetupError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SetupError::HueError(e) => write!(f, "Hue Error! {}", e),
+            SetupError::NoBridges => write!(f, "No Bridges found on network!"),
+            SetupError::LoginIoError(e) => write!(f, "Error while saving bridge login data to disk! {}", e),
+        }
+    }
+}
+
 impl WrappedBridge {
-    pub fn connect() -> Result<Self, HueError> {
+    pub fn connect() -> Result<Self, SetupError> {
+        let bridges = bridge::discover()?;
+        if bridges.len() == 0 {
+            return Err(SetupError::NoBridges)
+        }
         let ip = bridge::discover()?[0].ip().to_owned();
         let bridge = login(&ip)?;
         Ok(Self { bridge })

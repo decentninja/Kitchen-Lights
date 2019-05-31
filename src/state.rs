@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum State {
     Off,
@@ -6,6 +8,12 @@ pub enum State {
     HalfDown,
 }
 use State::*;
+
+#[derive(Deserialize)]
+pub struct Config {
+    off: f32,
+    full: f32
+}
 
 impl State {
     pub fn new() -> Self {
@@ -22,10 +30,10 @@ impl State {
     }
 
     /// Sets that state to a new value and output the number of required clicks to get there.
-    pub fn set(&mut self, value: f32) -> u32 {
-        let target = if value <= 0.3 {
+    pub fn set(&mut self, value: f32, config: &Config) -> u32 {
+        let target = if value <= config.off {
             Off
-        } else if value <= 0.8 {
+        } else if value <= config.full {
             match self {
                 Off | HalfUp => HalfUp,
                 Full | HalfDown => HalfDown,
@@ -48,7 +56,11 @@ mod test {
 
     fn test(from: State, value: f32, to: State, should: u32) {
         let mut state = from;
-        let clicks = state.set(value);
+        let config = Config {
+            off: 0.2,
+            full: 0.8,
+        };
+        let clicks = state.set(value, &config);
         assert_eq!((from, to, should), (from, state, clicks));
     }
 
