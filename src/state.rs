@@ -53,14 +53,6 @@ mod test {
     }
 
     #[test]
-    fn SlowlyUp() {
-        test(Off, 0.5, HalfUp, 1);
-        test(HalfUp, 0.7, Full, 1);
-        test(Full, 0.6, HalfDown, 1);
-        test(HalfDown, 0.1, Off, 1);
-    }
-
-    #[test]
     fn nothing() {
         test(Off, 0., Off, 0);
         test(HalfUp, 0.5, HalfUp, 0);
