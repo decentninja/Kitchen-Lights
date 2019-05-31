@@ -1,0 +1,8 @@
+Config(
+	pin: 7,
+	poll_time_ms: 1000,
+	state: Config(
+		off: 0.2,
+		full: 0.8
+	)
+)
