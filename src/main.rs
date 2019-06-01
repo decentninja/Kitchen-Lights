@@ -2,6 +2,7 @@ use chrono::prelude::*;
 use std::thread;
 use std::time::Duration;
 use rppal::gpio::{Gpio, OutputPin};
+use std::env;
 
 mod hue;
 mod state;
@@ -30,6 +31,12 @@ fn main() {
     };
     let mut state = state::State::new();
     let mut button = Gpio::new().unwrap().get(config.pin).unwrap().into_output();
+    button.set_low();
+    let args = env::args().collect::<Vec<String>>();
+    if args.len() == 2 && args[1] == "press" {
+    	tap(&mut button, config.hit_time_ms);
+	return
+    }
     loop {
         let bridge = wait_break!(
             hue::WrappedBridge::connect(),
