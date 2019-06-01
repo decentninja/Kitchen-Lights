@@ -8,7 +8,7 @@ use super::state;
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub pin: u64,
+    pub pin: u8,
     pub poll_time_ms: u64,
     pub state: state::Config,
     pub hit_time_ms: u64

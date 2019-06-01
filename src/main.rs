@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use std::thread;
 use std::time::Duration;
-use sysfs_gpio::{self, Pin};
+use rppal::gpio::{Gpio, OutputPin};
 
 mod hue;
 mod state;
@@ -29,14 +29,13 @@ fn main() {
         }
     };
     let mut state = state::State::new();
-    let button = Pin::new(7);
+    let mut button = Gpio::new().unwrap().get(config.pin).unwrap().into_output();
     loop {
         let bridge = wait_break!(
             hue::WrappedBridge::connect(),
             "Philips Hue Bridge",
             continue
         );
-        wait_break!(button.export(), "Could not get gpio pin", continue);
         println!("Hue connected!");
         loop {
             let value = wait_break!(bridge.magic(), "Philips Hue Bridge", break);
@@ -45,7 +44,7 @@ fn main() {
                 println!("{} Clicking to {:?}", Local::now(), state);
             }
             for _ in 0..clicks {
-                wait_break!(tap(&button, config.hit_time_ms), "Tapping", break);
+                tap(&mut button, config.hit_time_ms);
             }
             wait(config.poll_time_ms);
         }
@@ -56,9 +55,9 @@ fn wait(millis: u64) {
     thread::sleep(Duration::from_millis(millis));
 }
 
-fn tap(button: &Pin, hit_time: u64) -> Result<(), sysfs_gpio::Error> {
-    button.set_value(1)?;
+fn tap(button: &mut OutputPin, hit_time: u64) {
+    button.set_high();;
     wait(hit_time);
-    button.set_value(0)?;
-    Ok(())
+    button.set_low();
+    wait(hit_time);
 }

@@ -1,9 +1,9 @@
 Config(
-	pin: 7,
-	poll_time_ms: 1000,
+	pin: 4,
+	poll_time_ms: 500,
 	state: Config(
-		off: 0.2,
+		off: 0.4,
 		full: 0.8
 	),
-	hit_time_ms: 100,
+	hit_time_ms: 80,
 )
