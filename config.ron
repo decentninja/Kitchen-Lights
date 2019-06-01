@@ -4,5 +4,6 @@ Config(
 	state: Config(
 		off: 0.2,
 		full: 0.8
-	)
+	),
+	hit_time_ms: 100,
 )

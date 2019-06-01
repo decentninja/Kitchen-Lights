@@ -11,6 +11,7 @@ pub struct Config {
     pub pin: u64,
     pub poll_time_ms: u64,
     pub state: state::Config,
+    pub hit_time_ms: u64
 }
 
 #[derive(Fail, Debug)]

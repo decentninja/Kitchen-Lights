@@ -36,7 +36,7 @@ fn main() {
             "Philips Hue Bridge",
             continue
         );
-        wait_break!(button.export(), "Could not get gpio pin 7", continue);
+        wait_break!(button.export(), "Could not get gpio pin", continue);
         println!("Hue connected!");
         loop {
             let value = wait_break!(bridge.magic(), "Philips Hue Bridge", break);
@@ -45,7 +45,7 @@ fn main() {
                 println!("{} Clicking to {:?}", Local::now(), state);
             }
             for _ in 0..clicks {
-                wait_break!(tap(&button), "Tapping", break);
+                wait_break!(tap(&button, config.hit_time_ms), "Tapping", break);
             }
             wait(config.poll_time_ms);
         }
@@ -56,9 +56,9 @@ fn wait(millis: u64) {
     thread::sleep(Duration::from_millis(millis));
 }
 
-fn tap(button: &Pin) -> Result<(), sysfs_gpio::Error> {
+fn tap(button: &Pin, hit_time: u64) -> Result<(), sysfs_gpio::Error> {
     button.set_value(1)?;
-    wait(100);
+    wait(hit_time);
     button.set_value(0)?;
     Ok(())
 }
