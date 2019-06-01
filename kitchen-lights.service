@@ -1,0 +1,12 @@
+[Unit]
+Description=kitchen-lights
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/home/pi/Kitchen-Lights
+ExecStart=/home/pi/Kitchen-Lights/target/release/kitchen-lights
+
+[Install]
+WantedBy=multi-user.target
