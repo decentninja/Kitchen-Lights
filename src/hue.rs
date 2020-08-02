@@ -1,7 +1,6 @@
 use hueclient::bridge::Bridge;
 use hueclient::HueError;
 use std::fmt;
-use std::io;
 use std::fs::File;
 use std::io::{Read, Write};
 
@@ -39,7 +38,7 @@ impl WrappedBridge {
                         file.write(user_name.as_bytes()).unwrap();
                     },
                     Err(e) => {
-                        eprintln!("Could not open \"user\" file to write username. Will continue, but you'll have to click the button again on next boot.");
+                        eprintln!("Could not open \"user\" file to write username. Will continue, but you'll have to click the button again on next boot. {:?}", e);
                     }
                 };
             }
