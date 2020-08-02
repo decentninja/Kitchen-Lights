@@ -63,7 +63,7 @@ fn wait(millis: u64) {
 }
 
 fn tap(button: &mut OutputPin, hit_time: u64) {
-    button.set_high();;
+    button.set_high();
     wait(hit_time);
     button.set_low();
     wait(hit_time);

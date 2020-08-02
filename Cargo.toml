@@ -5,10 +5,10 @@ authors = ["decentninja <encrpt.wave@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-philipshue = "0.3.2"
 byteorder = "1.3.1"
+hueclient = {git = "https://github.com/kali/hue.rs", branch = "main", rev="e856d94410067669cc190a703e09a91b105592ed"}
 chrono = "0.4.6"
 ron = "0.5.1"
 serde = "1.0.92"
 failure = "0.1.5"
-rppal = "0.11.2"
+rppal = "0.11.3"
