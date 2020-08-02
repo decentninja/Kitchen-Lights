@@ -51,10 +51,9 @@ impl WrappedBridge {
     pub fn magic(&self) -> Result<f32, Error> {
         let all_lights = self.bridge.get_all_lights().map_err(|e| Error::LightCommunicationError(e))?;
         let magic = all_lights.iter().find(|light| light.light.name == "Magic Light").ok_or(Error::NoMagicLight)?;
-        Ok(if let Some(bri) = magic.light.state.bri {
-            bri as f32 / std::u8::MAX as f32
-        } else {
-            0.
+        Ok(match (magic.light.state.on, magic.light.state.bri) {
+            (true, Some(bri)) => bri as f32 / std::u8::MAX as f32,
+            _ => 0.,
         })
     }
 }
