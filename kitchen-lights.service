@@ -6,7 +6,7 @@ Type=simple
 Restart=always
 RestartSec=5s
 WorkingDirectory=/home/pi/Kitchen-Lights
-ExecStart=/home/pi/Kitchen-Lights/target/release/kitchen-lights
+ExecStart=/home/pi/Kitchen-Lights/kitchen-lights
 
 [Install]
 WantedBy=multi-user.target
